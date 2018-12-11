@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.example.star.service.APIClass.APIClient;
 import com.example.star.service.Bean.Forgetpassword;
+import com.example.star.service.Bean.VerifyOtp;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,7 +32,6 @@ public class ForgetActivity extends AppCompatActivity {
     Button req_otp;
     LinearLayout edt_otp;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,12 +47,16 @@ public class ForgetActivity extends AppCompatActivity {
         edt_otp = findViewById(R.id.edt_otp);
         textView = findViewById(R.id.textView);
 
+
+
         req_otp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 String name = username.getText().toString().trim();
                 String phone = mobile.getText().toString().trim();
+
+
 
                 if (req_otp.getText().toString().equalsIgnoreCase("Request OTP")) {
                     if (username.getText().toString().trim().length() <= 0) {
@@ -63,7 +67,7 @@ public class ForgetActivity extends AppCompatActivity {
                         mobile.requestFocus();
 
                     } else {
-                        getOTP(name, phone);
+                        getOTP(phone,name);
                         username.setVisibility(View.INVISIBLE);
                         mobile.setVisibility(View.INVISIBLE);
                         textView.setText("Pleace Enter Your OTP ");
@@ -72,8 +76,12 @@ public class ForgetActivity extends AppCompatActivity {
 
                     }
 
-                } else if (req_otp.getText().toString().equalsIgnoreCase("verfiy")) {
+                } else if (req_otp.getText().toString().equalsIgnoreCase("verify")) {
 
+                    String otp = otpone.getText().toString() + otptwo.getText().toString()
+                            + otpthree.getText().toString() + otpfour.getText().toString();
+
+                    verify(phone,otp);
 
                 }
 
@@ -126,7 +134,6 @@ public class ForgetActivity extends AppCompatActivity {
                                                   }
                                               });
         otpthree.addTextChangedListener(new
-
                                                 TextWatcher() {
                                                     @Override
                                                     public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -151,8 +158,37 @@ public class ForgetActivity extends AppCompatActivity {
 
     }
 
+    private void verify(String phone, String otp) {
 
-    private void getOTP(String name, String phone) {
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("mobile", phone);
+            jsonObject.put("otp", otp);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Call<VerifyOtp> verifyOtpCall = APIClient
+                .getApiClient()
+                .apInterface()
+                .getverfiy(jsonObject.toString());
+        verifyOtpCall.enqueue(new Callback<VerifyOtp>() {
+            @Override
+            public void onResponse(Call<VerifyOtp> call, Response<VerifyOtp> response) {
+                VerifyOtp verifyOtp = response.body();
+                Toast.makeText(ForgetActivity.this, verifyOtp.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(Call<VerifyOtp> call, Throwable t) {
+                Toast.makeText(ForgetActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+
+            }
+        });
+    }
+
+
+    private void getOTP(String phone, String name) {
 
         JSONObject jsonObject = new JSONObject();
         try {
